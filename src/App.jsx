@@ -1,13 +1,12 @@
 import { useState, useRef } from 'react'
 import './App.css'
-import Upload from "./Upload.jsx"
+import Calc from "./Calc.jsx"
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
-      <Upload />
+      <Calc />
     </>
   )
 }
