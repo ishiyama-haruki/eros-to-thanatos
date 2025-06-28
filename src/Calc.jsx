@@ -80,9 +80,9 @@ const Calc = () => {
 
   return (
     <div className="p-4 max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-2">画像のエロさ診断</h2>
+      <h2 className="text-2xl text-black font-bold mb-2">画像のエロさ診断</h2>
       <label
-        className="border-4 border-dotted flex w-[300px] h-[300px] rounded-[12px] justify-center items-center overflow-hidden cursor-pointer"
+        className="border-4 border-dotted border-black flex w-[300px] h-[300px] rounded-[12px] justify-center items-center overflow-hidden cursor-pointer"
       >
         <input
           ref={imageInputRef}
@@ -93,7 +93,7 @@ const Calc = () => {
           hidden
         />
         {!previewUrl && (
-          <span>画像をアップロード</span>
+          <span className="text-black">画像をアップロード</span>
         )}
         {previewUrl && (
           <img
@@ -109,15 +109,15 @@ const Calc = () => {
           onClick={handleUpload}
           disabled={!selectedFile || isUploading || nsfwResult}
           className="bg-blue-500 text-white px-4 py-2 rounded"
-          style={{ backgroundColor: "blue" }}
+          // style={{ backgroundColor: "blue" }}
         >
           {isUploading ? '診断中...' : '診断'}
         </button>
         <button
           onClick={handleReset}
           disabled={!selectedFile}
-          className="bg-blue-500 text-white px-4 py-2 rounded ml-2"
-          style={{ backgroundColor: "gray" }}
+          className="bg-gray-500 text-white px-4 py-2 rounded ml-2"
+          // style={{ backgroundColor: "gray" }}
         >
           リセット
         </button>
