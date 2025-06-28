@@ -16,16 +16,22 @@ const Calc = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadedUrl, setUploadedUrl] = useState(null);
-  const inputRef = useRef(null);
+  const [nsfwResult, setNsfwResult] = useState(null);
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
-      setUploadedUrl(null);
+      setNsfwResult(null);
     }
+  };
+
+  const handleReset = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setNsfwResult(null);
+    console.log("キャンセル済み")
   };
 
   const handleUpload = async () => {
@@ -38,21 +44,28 @@ const Calc = () => {
       Key: key,
       Body: selectedFile,
       ContentType: selectedFile.type,
-    //   ACL: 'public-read', // アップロードした画像を公開
     };
 
     setIsUploading(true);
 
     try {
+      // S3にアップロード
       await s3.upload(params).promise();
-      const url = `https://${params.Bucket}.s3.${import.meta.env.VITE_AWS_REGION}.amazonaws.com/${key}`;
-      setUploadedUrl(url);
-      console.log("アップロード成功");
+      const image_url = `https://${params.Bucket}.s3.${import.meta.env.VITE_AWS_REGION}.amazonaws.com/${key}`;
+
+      // S3の画像パスを取得し、NSFWの計算を実行
+      fetch(`/api/?url=${image_url}`)
+        .then(response => response.json())
+        .then(data => {
+          // console.log(data)
+          setNsfwResult(data)
+        })
+        .catch(error => {
+          console.log("NSFW失敗:", error)
+        })
+
     } catch (error) {
-        console.error("アップロード失敗:", error);
-        // 追加情報
-        console.log("Error message:", error.message);
-        console.log("Error code:", error.code);
+        console.error("S3アップロード失敗:", error);
     } finally {
       setIsUploading(false);
     }
@@ -76,18 +89,28 @@ const Calc = () => {
         />
       )}
 
-      <button
-        onClick={handleUpload}
-        disabled={!selectedFile || isUploading}
-        className="bg-blue-500 text-white px-4 py-2 rounded"
-        style={{ backgroundColor: "blue" }}
-      >
-        {isUploading ? 'アップロード中...' : 'アップロード'}
-      </button>
+      <div>
+        <button
+          onClick={handleUpload}
+          disabled={!selectedFile || isUploading || nsfwResult}
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+          style={{ backgroundColor: "blue" }}
+        >
+          {isUploading ? '診断中...' : '診断'}
+        </button>
+        <button
+          onClick={handleReset}
+          disabled={!selectedFile}
+          className="bg-blue-500 text-white px-4 py-2 rounded ml-2"
+          style={{ backgroundColor: "gray" }}
+        >
+          リセット
+        </button>
+      </div>
 
-      {uploadedUrl && (
-        <p className="mt-2 text-sm break-all text-green-700">
-          アップロード完了: <a href={uploadedUrl} target="_blank" rel="noreferrer">{uploadedUrl}</a>
+      {nsfwResult && (
+        <p className="text-5xl font-bold">
+          {(nsfwResult.score * 100).toFixed(2)}
         </p>
       )}
     </div>
