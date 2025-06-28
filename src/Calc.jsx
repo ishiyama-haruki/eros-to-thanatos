@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import AWS from 'aws-sdk';
 
+// AWS認証情報
 AWS.config.update({
   region: import.meta.env.VITE_AWS_REGION,
   credentials: new AWS.Credentials({
@@ -18,6 +19,9 @@ const Calc = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [nsfwResult, setNsfwResult] = useState(null);
 
+  const imageInputRef = useRef(null);
+
+  // 画像アップロード時の処理
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -27,13 +31,16 @@ const Calc = () => {
     }
   };
 
+  // リセット時の処理
   const handleReset = () => {
     setSelectedFile(null);
     setPreviewUrl(null);
     setNsfwResult(null);
+    imageInputRef.current.value = ""
     console.log("キャンセル済み")
   };
 
+  // メインの診断処理
   const handleUpload = async () => {
     if (!selectedFile) return;
 
@@ -73,23 +80,31 @@ const Calc = () => {
 
   return (
     <div className="p-4 max-w-md mx-auto">
-      <h2 className="text-xl font-bold mb-2">画像アップロード</h2>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        className="mb-2"
-      />
-
-      {previewUrl && (
-        <img
-          src={previewUrl}
-          alt="プレビュー"
-          className="w-full object-cover mb-2 rounded"
+      <h2 className="text-2xl font-bold mb-2">画像のエロさ診断</h2>
+      <label
+        className="border-4 border-dotted flex w-[300px] h-[300px] rounded-[12px] justify-center items-center overflow-hidden cursor-pointer"
+      >
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="mb-2"
+          hidden
         />
-      )}
+        {!previewUrl && (
+          <span>画像をアップロード</span>
+        )}
+        {previewUrl && (
+          <img
+            src={previewUrl}
+            alt="プレビュー"
+            className="w-full object-cover mb-2 rounded"
+          />
+        )}
+      </label>
 
-      <div>
+      <div className="mt-5">
         <button
           onClick={handleUpload}
           disabled={!selectedFile || isUploading || nsfwResult}
@@ -109,7 +124,7 @@ const Calc = () => {
       </div>
 
       {nsfwResult && (
-        <p className="text-5xl font-bold">
+        <p className="text-5xl font-bold mt-5" style={{color: "blue"}}>
           {(nsfwResult.score * 100).toFixed(2)}
         </p>
       )}
